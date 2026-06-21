@@ -10,12 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from jsonschema import Draft202012Validator, ValidationError
 
 ROOT = Path(__file__).parent
-for env_path in (
-    ROOT.parent / ".env",
-    ROOT / ".env",
-    ROOT.parent / "S9SharedCode" / "code" / ".env",
-):
-    load_dotenv(env_path)
+load_dotenv(ROOT.parent / ".env")
 
 import db
 import providers as P

@@ -2,7 +2,6 @@
 expects {"left":"red","right":"blue"} parsed structured output."""
 import base64, struct, zlib, json
 import httpx
-import pytest
 
 GW = "http://localhost:8109"
 
@@ -39,27 +38,17 @@ body = {
     "agent": "v9_vision_endpoint_smoke",
 }
 
-@pytest.mark.network
-def test_vision_endpoint_red_blue_schema():
-    with httpx.Client(timeout=60) as c:
-        try:
-            caps = c.get(f"{GW}/v1/capabilities")
-            caps.raise_for_status()
-        except httpx.HTTPError as e:
-            pytest.skip(f"gateway unavailable at {GW}: {e}")
+with httpx.Client(timeout=60) as c:
+    r = c.post(f"{GW}/v1/vision", json=body)
+    r.raise_for_status()
+    out = r.json()
 
-        if not any(cap.get("vision") for cap in caps.json().values()):
-            pytest.skip("gateway has no configured vision-capable providers")
+print("provider:", out["provider"], "/ model:", out["model"], "/ latency:", out["latency_ms"], "ms")
+print("text    :", out["text"])
+print("parsed  :", json.dumps(out["parsed"], indent=2))
+print("usage   :", out["input_tokens"], "in /", out["output_tokens"], "out")
 
-        r = c.post(f"{GW}/v1/vision", json=body)
-        r.raise_for_status()
-        out = r.json()
-
-    print("provider:", out["provider"], "/ model:", out["model"], "/ latency:", out["latency_ms"], "ms")
-    print("text    :", out["text"])
-    print("parsed  :", json.dumps(out["parsed"], indent=2))
-    print("usage   :", out["input_tokens"], "in /", out["output_tokens"], "out")
-
-    assert out["parsed"], "parsed should be populated when schema is given"
-    assert out["parsed"]["left"].lower().startswith("red"), out["parsed"]
-    assert out["parsed"]["right"].lower().startswith("blue"), out["parsed"]
+assert out["parsed"], "parsed should be populated when schema is given"
+assert out["parsed"]["left"].lower().startswith("red"), out["parsed"]
+assert out["parsed"]["right"].lower().startswith("blue"), out["parsed"]
+print("\n[PASS]")

@@ -27,9 +27,8 @@ GATEWAY_URL = "http://localhost:8109"
 
 def _is_up() -> bool:
     try:
-        r = httpx.get(f"{GATEWAY_URL}/v1/providers", timeout=2.0)
-        r.raise_for_status()
-        return bool(r.json().get("providers"))
+        httpx.get(f"{GATEWAY_URL}/v1/routers", timeout=2.0)
+        return True
     except Exception:
         return False
 

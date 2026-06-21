@@ -30,6 +30,14 @@ import sys
 import uuid
 from pathlib import Path
 
+import io
+# Force UTF-8 on stdout/stderr so print() calls with non-cp1252 characters
+# (e.g. → in fetched page previews) don't raise UnicodeEncodeError on Windows.
+if hasattr(sys.stdout, "buffer"):
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", line_buffering=True)
+if hasattr(sys.stderr, "buffer"):
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", line_buffering=True)
+
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
